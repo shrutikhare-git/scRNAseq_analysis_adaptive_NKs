@@ -1,0 +1,173 @@
+---
+title: "cellphonedb"
+output: html_notebook
+---
+
+```{r}
+# clear environment etc.
+rm(list=ls())
+getwd()
+dev.off()
+```
+
+```{r, message=FALSE}
+# loading libraries
+library(dittoSeq)
+library(dplyr)
+library(Seurat)
+library(patchwork)
+library(ggplot2)
+library(readr)
+library(tidyverse)
+#library(scCustomize)
+#library(qs)
+library(paletteer)
+set.seed(1234)
+
+library(tidyverse)
+library(magrittr)
+library(liana)
+library("circlize")
+```
+
+```{r}
+#Leiden color palette extended not checked
+colors <- c('#1f77b4', '#ff7f0e', '#279e68', '#d62728', '#aa40fc', '#8c564b',
+'#e377c2', '#b5bd61', '#17becf', '#aec7e8', '#ffbb78', '#98df8a',
+'#ff9896', '#c5b0d5', '#c49c94', '#f7b6d2', '#dbdb8d', '#9edae5',
+'#ad494a', '#8c6d31', '#FF34FF', '#763568', '#63FFAC', '#B79762',
+'#004D43', '#002dff', '#997D87', '#5A0007', '#809693', '#6A3A4C',
+'#1B4400', '#4FC601', '#3B5DFF', '#4A3B53', '#FF2F80', '#61615A',
+'#BA0900', '#6B7900', '#00C2A0', '#FFAA92', '#FF90C9', '#B903AA',
+'#D16100', '#DDEFFF', '#000035', '#7B4F4B', '#A1C299', '#300018',
+'#0AA6D8', '#013349', '#00846F', '#372101', '#FFB500', '#C2FFED',
+'#A079BF', '#CC0744')
+```
+
+```{r}
+# another palette for samples
+colorssam <- c("#FFA74DFF", "#FF71BDFF", "#FFDB58FF", "#92D050FF", "#00B050FF", "#0C5BB0FF", "#588176FF", "#7030A0FF",  "#BC8A96FF", "#9A703EFF", "#FF9175FF", "#149BEDFF")
+
+```
+
+```{r}
+# read an object containing only NK and myeloid cells
+# This object has a metadata column named 'Specific_CellType' including annotated NK and myeloid subtypes
+nkmyeuse <- readRDS("clusters.rds")
+```
+
+```{r}
+# changing object idents as Liana uses this info to make categories
+unique(Idents(nkmyeuse))
+Idents(nkmyeuse) <- nkmyeuse@meta.data$Specific_CellType
+unique(Idents(nkmyeuse))
+```
+
+running cellphonedb (cpdb)
+```{r}
+cpdb_all <- liana_wrap(nkmyeuse,
+                        method = 'cellphonedb',
+                        resource = c('CellPhoneDB'),
+                        permutation.params = list(nperms=100,
+                                                  parallelize=FALSE,
+                                                  workers=4),
+                        expr_prop=0.05)
+```
+
+```{r}
+cpdb_all <- read.table("cpdb_NK-mye.tsv", sep = " ", header = T)
+```
+
+```{r}
+cpdb_hm2 <- cpdb_all %>%
+  filter(pvalue <= 0.01) %>% 
+  filter(source != target) %>%
+  filter(sourceCellType != targetCellType) %>%
+  filter(receptor.expr >= 0.5) %>%
+  filter(ligand.expr >= 0.5) 
+
+cpdb_hm_final <- cpdb_hm2 %>%
+  subset(source == "CD16+ monocytes" | source == "Ig+ macrophages" | source == "CD14+ monocytes" | source == "FOLR2+ macrophages" | source == "IFRD1+ macrophages" | source == "IL10+ macrophages" | source == "OLFML3+ macrophages" | source == "cDC1" | source == "cDC2" | source == "Proliferating cells" | source == "Pro-inflammatory macrophages" | source == "MT1+ Macrophages" | source == "SIGLEC15+ macrophages") %>%
+  subset(target == "0" | target == "1" | target == "2" | target == "3" | target == "4" | target == "5" | target == "6" | target == "7" | target == "8" | target == "9" | target == "10")
+
+cpdb_hm_final$pairs <- paste(cpdb_hm_final$source, "_", cpdb_hm_final$target)
+
+freq <- cpdb_hm_final %>% 
+  group_by(pairs) %>% 
+  count(pairs) %>%
+  ungroup() 
+
+freq[c("source","target")] <- str_split_fixed(freq$pairs, ' _ ', 2) 
+freq$Frequency <- freq$n 
+freq <- select(freq, -c(pairs,n))
+
+```
+
+heatmap 
+```{r}
+# heatmap 
+svg("heatmap.svg", height = 7, width = 11)
+freq %>% mutate(target = factor(target, levels=c("0","1","2","3","4","5","6","7","8","9","10"))) %>%
+  mutate(source = factor(source, levels=c("CD14+ monocytes", "CD16+ monocytes", "cDC1", "cDC2", "FOLR2+ macrophages", "IFRD1+ macrophages", "Ig+ macrophages", "IL10+ macrophages", "MT1+ Macrophages", "OLFML3+ macrophages", "Pro-inflammatory macrophages", "Proliferating cells", "SIGLEC15+ macrophages"))) %>%
+  ggplot(aes(x = target, y = source, fill = Frequency)) +
+  geom_tile()+scale_fill_gradient(high = "#550A35", low = "white")+ 
+  geom_tile() +
+  labs(title = "Number of interactions",
+       x = "NK clusters (Target)",
+       y = "Myeloid clusters (Source)") +
+  theme(axis.text = element_text(size = 15), axis.title = element_text(size = 15, face = "bold"))
+dev.off()
+```
+
+
+```{r}
+# filtering cellphonedb results
+
+cpdb_filt <- cpdb_filt %>%
+  filter(pvalue <= 0.01) %>% 
+  filter(source != target) %>% 
+  filter(sourceCellType != targetCellType) %>% 
+  filter(receptor == receptor.complex) %>%
+  filter(ligand == ligand.complex) %>%  
+  filter(receptor.expr >= 0.1) %>%
+  filter(ligand.expr >= 0.1)
+```
+
+consider source as DCs
+```{r}
+cpdb_nkdc <- subset(cpdb_filt, source == 'cDC1' | source == 'cDC2')
+
+svg("chord.svg")
+chord_freq(cpdb_nkdc, cex = 1.2, order = c("cDC1","cDC2","0","1","2","3","4","5","6","7","8","9","10")) #row.col = c("#00FF0080", "#FFE4C4"))
+dev.off()
+```
+
+```{r}
+svg("dotplot.svg", width = 13, height = 12)
+cpdb_nkdc %>%
+  mutate(pvalue = -log10(pvalue + 1e-10)) %>% 
+  mutate(target = factor(target, levels=c("0","1","2","3","4","5","6","7","8","9","10"))) %>%
+  liana_dotplot( source_groups = c("cDC1","cDC2"),
+                 target_groups = c("0","1","2","3","4","5","6","7","8","9","10"),
+                 specificity = "pvalue",
+                 magnitude = "lr.mean",
+                 show_complex = TRUE,
+                 size.label = "-log10(p-value)")
+dev.off()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

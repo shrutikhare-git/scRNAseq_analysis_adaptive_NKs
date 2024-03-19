@@ -1,0 +1,549 @@
+---
+title: "Analysis of ovarian cancer data - GSE184880"
+output: html_notebook
+---
+
+```{r}
+# clear environment etc.
+rm(list=ls())
+getwd()
+dev.off()
+```
+
+```{r, message=FALSE}
+# loading libraries
+library(dittoSeq)
+library(dplyr)
+library(Seurat)
+library(patchwork)
+library(ggplot2)
+library(readr)
+library(tidyverse)
+library(paletteer)
+set.seed(1234)
+```
+
+```{r}
+#Leiden color palette extended not checked
+colors <- c('#1f77b4', '#ff7f0e', '#279e68', '#d62728', '#aa40fc', '#8c564b',
+'#e377c2', '#b5bd61', '#17becf', '#aec7e8', '#ffbb78', '#98df8a',
+'#ff9896', '#c5b0d5', '#c49c94', '#f7b6d2', '#dbdb8d', '#9edae5',
+'#ad494a', '#8c6d31', '#FF34FF', '#763568', '#63FFAC', '#B79762',
+'#004D43', '#002dff', '#997D87', '#5A0007', '#809693', '#6A3A4C',
+'#1B4400', '#4FC601', '#3B5DFF', '#4A3B53', '#FF2F80', '#61615A',
+'#BA0900', '#6B7900', '#00C2A0', '#FFAA92', '#FF90C9', '#B903AA',
+'#D16100', '#DDEFFF', '#000035', '#7B4F4B', '#A1C299', '#300018',
+'#0AA6D8', '#013349', '#00846F', '#372101', '#FFB500', '#C2FFED',
+'#A079BF', '#CC0744')
+```
+
+```{r}
+# another palette for samples
+colorssam <- c("#FFA74DFF", "#FF71BDFF", "#FFDB58FF", "#92D050FF", "#00B050FF", "#0C5BB0FF", "#588176FF", "#7030A0FF",  "#BC8A96FF", "#9A703EFF", "#FF9175FF", "#149BEDFF")
+```
+
+
+```{r}
+# create seurat objects for each sample
+
+x = "GSM5599220_Norm1"
+matrix=paste("GSE184880_RAW/", x, ".matrix.mtx.gz", sep="")
+features=paste("GSE184880_RAW/", x, ".genes.tsv.gz", sep="")
+barcodes=paste("GSE184880_RAW/", x, ".barcodes.tsv.gz", sep="")
+expression_matrix <- ReadMtx(mtx = matrix, features = features, cells = barcodes)
+seu1 <- CreateSeuratObject(counts = expression_matrix)
+```
+
+
+```{r}
+x = "GSM5599221_Norm2"
+matrix=paste("GSE184880_RAW/", x, ".matrix.mtx.gz", sep="")
+features=paste("GSE184880_RAW/", x, ".genes.tsv.gz", sep="")
+barcodes=paste("GSE184880_RAW/", x, ".barcodes.tsv.gz", sep="")
+expression_matrix <- ReadMtx(mtx = matrix, features = features, cells = barcodes)
+seu2 <- CreateSeuratObject(counts = expression_matrix)
+
+x = "GSM5599222_Norm3"
+matrix=paste("GSE184880_RAW/", x, ".matrix.mtx.gz", sep="")
+features=paste("GSE184880_RAW/", x, ".genes.tsv.gz", sep="")
+barcodes=paste("GSE184880_RAW/", x, ".barcodes.tsv.gz", sep="")
+expression_matrix <- ReadMtx(mtx = matrix, features = features, cells = barcodes)
+seu3 <- CreateSeuratObject(counts = expression_matrix)
+
+x = "GSM5599223_Norm4"
+matrix=paste("GSE184880_RAW/", x, ".matrix.mtx.gz", sep="")
+features=paste("GSE184880_RAW/", x, ".genes.tsv.gz", sep="")
+barcodes=paste("GSE184880_RAW/", x, ".barcodes.tsv.gz", sep="")
+expression_matrix <- ReadMtx(mtx = matrix, features = features, cells = barcodes)
+seu4 <- CreateSeuratObject(counts = expression_matrix)
+
+x = "GSM5599224_Norm5"
+matrix=paste("GSE184880_RAW/", x, ".matrix.mtx.gz", sep="")
+features=paste("GSE184880_RAW/", x, ".genes.tsv.gz", sep="")
+barcodes=paste("GSE184880_RAW/", x, ".barcodes.tsv.gz", sep="")
+expression_matrix <- ReadMtx(mtx = matrix, features = features, cells = barcodes)
+seu5 <- CreateSeuratObject(counts = expression_matrix)
+
+x = "GSM5599225_Cancer1"
+matrix=paste("GSE184880_RAW/", x, ".matrix.mtx.gz", sep="")
+features=paste("GSE184880_RAW/", x, ".genes.tsv.gz", sep="")
+barcodes=paste("GSE184880_RAW/", x, ".barcodes.tsv.gz", sep="")
+expression_matrix <- ReadMtx(mtx = matrix, features = features, cells = barcodes)
+seu6 <- CreateSeuratObject(counts = expression_matrix)
+
+x = "GSM5599226_Cancer2"
+matrix=paste("GSE184880_RAW/", x, ".matrix.mtx.gz", sep="")
+features=paste("GSE184880_RAW/", x, ".genes.tsv.gz", sep="")
+barcodes=paste("GSE184880_RAW/", x, ".barcodes.tsv.gz", sep="")
+expression_matrix <- ReadMtx(mtx = matrix, features = features, cells = barcodes)
+seu7 <- CreateSeuratObject(counts = expression_matrix)
+
+x = "GSM5599227_Cancer3"
+matrix=paste("GSE184880_RAW/", x, ".matrix.mtx.gz", sep="")
+features=paste("GSE184880_RAW/", x, ".genes.tsv.gz", sep="")
+barcodes=paste("GSE184880_RAW/", x, ".barcodes.tsv.gz", sep="")
+expression_matrix <- ReadMtx(mtx = matrix, features = features, cells = barcodes)
+seu8 <- CreateSeuratObject(counts = expression_matrix)
+
+x = "GSM5599228_Cancer4"
+matrix=paste("GSE184880_RAW/", x, ".matrix.mtx.gz", sep="")
+features=paste("GSE184880_RAW/", x, ".genes.tsv.gz", sep="")
+barcodes=paste("GSE184880_RAW/", x, ".barcodes.tsv.gz", sep="")
+expression_matrix <- ReadMtx(mtx = matrix, features = features, cells = barcodes)
+seu9 <- CreateSeuratObject(counts = expression_matrix)
+
+x = "GSM5599229_Cancer5"
+matrix=paste("GSE184880_RAW/", x, ".matrix.mtx.gz", sep="")
+features=paste("GSE184880_RAW/", x, ".genes.tsv.gz", sep="")
+barcodes=paste("GSE184880_RAW/", x, ".barcodes.tsv.gz", sep="")
+expression_matrix <- ReadMtx(mtx = matrix, features = features, cells = barcodes)
+seu10 <- CreateSeuratObject(counts = expression_matrix)
+
+x = "GSM5599230_Cancer6"
+matrix=paste("GSE184880_RAW/", x, ".matrix.mtx.gz", sep="")
+features=paste("GSE184880_RAW/", x, ".genes.tsv.gz", sep="")
+barcodes=paste("GSE184880_RAW/", x, ".barcodes.tsv.gz", sep="")
+expression_matrix <- ReadMtx(mtx = matrix, features = features, cells = barcodes)
+seu11 <- CreateSeuratObject(counts = expression_matrix)
+
+x = "GSM5599231_Cancer7"
+matrix=paste("GSE184880_RAW/", x, ".matrix.mtx.gz", sep="")
+features=paste("GSE184880_RAW/", x, ".genes.tsv.gz", sep="")
+barcodes=paste("GSE184880_RAW/", x, ".barcodes.tsv.gz", sep="")
+expression_matrix <- ReadMtx(mtx = matrix, features = features, cells = barcodes)
+seu12 <- CreateSeuratObject(counts = expression_matrix)
+
+```
+
+Sample-wise QC
+
+```{r}
+seu1[["percent.mt"]] <- PercentageFeatureSet(seu1, pattern = "^MT-")
+seu2[["percent.mt"]] <- PercentageFeatureSet(seu2, pattern = "^MT-")
+seu3[["percent.mt"]] <- PercentageFeatureSet(seu3, pattern = "^MT-")
+seu4[["percent.mt"]] <- PercentageFeatureSet(seu4, pattern = "^MT-")
+seu5[["percent.mt"]] <- PercentageFeatureSet(seu5, pattern = "^MT-")
+seu6[["percent.mt"]] <- PercentageFeatureSet(seu6, pattern = "^MT-")
+seu7[["percent.mt"]] <- PercentageFeatureSet(seu7, pattern = "^MT-")
+seu8[["percent.mt"]] <- PercentageFeatureSet(seu8, pattern = "^MT-")
+seu9[["percent.mt"]] <- PercentageFeatureSet(seu9, pattern = "^MT-")
+seu10[["percent.mt"]] <- PercentageFeatureSet(seu10, pattern = "^MT-")
+seu11[["percent.mt"]] <- PercentageFeatureSet(seu11, pattern = "^MT-")
+seu12[["percent.mt"]] <- PercentageFeatureSet(seu12, pattern = "^MT-")
+```
+
+```{r}
+pdf(file = "QC_violin_plots_unfiltered.pdf")
+VlnPlot(seu1, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0)
+print('seu1')
+VlnPlot(seu2, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0)
+print('seu2')
+VlnPlot(seu3, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0)
+print('seu3')
+VlnPlot(seu4, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0)
+print('seu4')
+VlnPlot(seu5, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0)
+print('seu5')
+VlnPlot(seu6, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0)
+print('seu6')
+VlnPlot(seu7, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0)
+print('seu7')
+VlnPlot(seu8, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0)
+print('seu8')
+VlnPlot(seu9, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0)
+print('seu9')
+VlnPlot(seu10, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0)
+print('seu10')
+VlnPlot(seu11, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0)
+print('seu11')
+VlnPlot(seu12, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0)
+print('seu12')
+dev.off()
+```
+```{r}
+pdf(file = "QC_scatter_plots_unfiltered.pdf")
+FeatureScatter(seu1, feature1 = "nCount_RNA", feature2 = "percent.mt")
+FeatureScatter(seu2, feature1 = "nCount_RNA", feature2 = "percent.mt")
+FeatureScatter(seu3, feature1 = "nCount_RNA", feature2 = "percent.mt")
+FeatureScatter(seu4, feature1 = "nCount_RNA", feature2 = "percent.mt")
+FeatureScatter(seu5, feature1 = "nCount_RNA", feature2 = "percent.mt")
+FeatureScatter(seu6, feature1 = "nCount_RNA", feature2 = "percent.mt")
+FeatureScatter(seu7, feature1 = "nCount_RNA", feature2 = "percent.mt")
+FeatureScatter(seu8, feature1 = "nCount_RNA", feature2 = "percent.mt")
+FeatureScatter(seu9, feature1 = "nCount_RNA", feature2 = "percent.mt")
+FeatureScatter(seu10, feature1 = "nCount_RNA", feature2 = "percent.mt")
+FeatureScatter(seu11, feature1 = "nCount_RNA", feature2 = "percent.mt")
+FeatureScatter(seu12, feature1 = "nCount_RNA", feature2 = "percent.mt")
+dev.off()
+```
+Filtering each sample individually
+
+```{r}
+# checking various scatter plots to decide cutoffs 
+FeatureScatter(seu12, feature1 = "nFeature_RNA", feature2 = "nCount_RNA") + scale_x_continuous(limits = c(0,9500))
+FeatureScatter(seu12, feature1 = "percent.mt", feature2 = "nCount_RNA") + scale_x_continuous(limits = c(0,25))
+```
+
+```{r}
+# subsetting 
+seu1 <- subset(seu1, subset = nFeature_RNA > 200 & nFeature_RNA < 7500 & percent.mt < 20)
+seu2 <- subset(seu2, subset = nFeature_RNA > 200 & nFeature_RNA < 7500 & percent.mt < 20)
+seu3 <- subset(seu3, subset = nFeature_RNA > 200 & nFeature_RNA < 9000 & percent.mt < 20)
+seu4 <- subset(seu4, subset = nFeature_RNA > 200 & nFeature_RNA < 7500 & percent.mt < 20)
+seu5 <- subset(seu5, subset = nFeature_RNA > 200 & nFeature_RNA < 9000 & percent.mt < 20)
+seu6 <- subset(seu6, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 25)
+seu7 <- subset(seu7, subset = nFeature_RNA > 200 & nFeature_RNA < 9000 & percent.mt < 25)
+seu8 <- subset(seu8, subset = nFeature_RNA > 200 & nFeature_RNA < 9000 & percent.mt < 25)
+seu9 <- subset(seu9, subset = nFeature_RNA > 200 & nFeature_RNA < 9000 & percent.mt < 25)
+seu10 <- subset(seu10, subset = nFeature_RNA > 200 & nFeature_RNA < 9000 & percent.mt < 25)
+seu11 <- subset(seu11, subset = nFeature_RNA > 200 & nFeature_RNA < 10000 & percent.mt < 25)
+seu12 <- subset(seu12, subset = nFeature_RNA > 200 & nFeature_RNA < 95000 & percent.mt < 25)
+
+
+# cell counts before and after filtering
+# seu1 - 6370, 5962 
+# seu2 - 5174, 4839
+# seu3 - 4475, 3938 
+# seu4 - 6662, 5819  
+# seu5 - 4364, 3576 
+# seu6 - 8823, 6520 
+# seu7 - 4390, 3092 
+# seu8 - 5107, 4305  
+# seu9 - 4169, 1583 
+# seu10 - 5892, 5031 
+# seu11 - 5215, 4181  
+# seu12 - 5179, 4434  
+```
+
+
+```{r}
+# merge objects after filtering
+data.combined <- merge(seu1, y = c(seu2, seu3, seu4, seu5, seu6, seu7, seu8, seu9, seu10, seu11, seu12), add.cell.ids = c("GSM5599220", "GSM5599221", "GSM5599222", "GSM5599223", "GSM5599224", "GSM5599225", "GSM5599226", "GSM5599227", "GSM5599228", "GSM5599229", "GSM5599230", "GSM5599231"), project = "OC")
+```
+
+```{r}
+# add a samples column
+data.combined[["Samples"]] <- sapply(strsplit(as.character(row.names(data.combined@meta.data)), "_"), head, 1)
+data.combined@meta.data
+```
+
+
+```{r}
+# QC - after filtering
+png("QC_parameters_afterFiltering.png", width = 3000, height = 1500, res = 300)
+VlnPlot(data.combined, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0)
+dev.off()
+```
+
+
+```{r}
+png("QC_parameters_samples_afterFiltering.png", width = 3000, height = 1500, res = 300)
+VlnPlot(data.combined, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0, group.by = "Samples", cols = colorssam) 
+dev.off()
+```
+
+```{r}
+# Initial clustering
+data.combined <- NormalizeData(data.combined)
+data.combined <- FindVariableFeatures(data.combined, selection.method = "vst", nfeatures = 2000)
+
+# Identify the 10 most highly variable genes
+top10 <- head(VariableFeatures(data.combined), 10)
+
+# scale data
+all.genes <- rownames(data.combined)
+data.combined <- ScaleData(data.combined, features = all.genes)
+
+# PCA on scaled data
+data.combined <- RunPCA(data.combined, features = VariableFeatures(object = data.combined), npcs = 100)
+```
+
+```{r}
+ElbowPlot(data.combined, ndims=100)
+```
+
+
+```{r}
+data.combined <- FindNeighbors(data.combined, dims = 1:25, verbose = FALSE)
+data.combined <- FindClusters(data.combined, verbose = FALSE, resolution = 0.5)
+data.combined <- RunUMAP(data.combined, dims = 1:25, verbose = FALSE)
+DimPlot(object = data.combined, label = TRUE, reduction = "umap", cols = colors)
+```
+
+Running Doublet Finder program
+
+```{r, message=FALSE}
+library(scDblFinder)
+library(scater)
+# install loomR from GitHub using the remotes package remotes::install_github(repo = 'mojaveazure/loomR', ref = 'develop')
+library(loomR)
+library(Seurat)
+library(patchwork)
+```
+
+
+```{r}
+# running scDblFinder
+# converting to 'single cell experiment' format (directly running on seurat object generated errors)
+sce <- as.SingleCellExperiment(data.combined)
+sce
+ 
+```
+
+```{r}
+# running doubletfinder with clusters = TRUE - so the fast clustering approach will be employed.
+scdbl <- scDblFinder(sce, samples = "Samples", clusters = TRUE)
+```
+
+
+```{r}
+# save a table of scDblFinder output
+library(tidyverse)
+table <- (data.frame(doublet=scdbl@colData@listData[["scDblFinder.class"]],row.names = Cells(scdbl)))
+table <- rownames_to_column(table, var = "cell")
+```
+
+```{r}
+# save metadata table of the seurat object
+metadata <- data.combined@meta.data
+metadata <- rownames_to_column(metadata, var = "cell")
+```
+
+```{r}
+# new metadata with doublet column
+metadata.new <- inner_join(x = metadata, y = table)
+```
+
+```{r}
+# replace the metadata
+metadata.new <- column_to_rownames(metadata.new, var = "cell")
+data.combined@meta.data <- metadata.new
+```
+
+```{r}
+# get stats about number of doublets predicted per sample
+
+metadata.new %>%
+  group_by(doublet) %>%
+  summarise(n = n()) %>%
+  mutate(Freq = n/sum(n))  
+
+```
+```{r}
+# checking doublets on dimplot - split
+DimPlot(object = data.combined, label = FALSE, reduction = "umap", pt.size = 0.5, cols = colors, split.by = "doublet") +
+  guides(colour = guide_legend(override.aes = list(size=10))) +
+  theme(legend.text=element_text(face="bold", size=15))
+
+```
+
+
+```{r}
+# removing doublets
+singlets <- subset(data.combined, doublet == "singlet")
+```
+
+
+```{r}
+singlets <- FindVariableFeatures(singlets, selection.method = "vst", nfeatures = 2000)
+
+all.genes <- rownames(singlets)
+singlets <- ScaleData(singlets, features = all.genes)
+
+singlets <- RunPCA(singlets, features = VariableFeatures(object = singlets), npcs = 100)
+
+```
+
+
+```{r}
+ElbowPlot(singlets, ndims=100)
+
+```
+
+Screening PCs
+
+```{r}
+singlets <- FindNeighbors(singlets, dims = 1:10, verbose = FALSE)
+singlets <- FindClusters(singlets, verbose = FALSE, resolution = 0.5)
+singlets <- RunUMAP(singlets, dims = 1:10, verbose = FALSE)
+DimPlot(object = singlets, label = TRUE, reduction = "umap", cols = colors)
+```
+
+
+```{r}
+singlets <- FindNeighbors(singlets, dims = 1:20, verbose = FALSE)
+singlets <- FindClusters(singlets, verbose = FALSE, resolution = 0.5)
+singlets <- RunUMAP(singlets, dims = 1:20, verbose = FALSE)
+DimPlot(object = singlets, label = TRUE, reduction = "umap", cols = colors)
+
+singlets <- FindNeighbors(singlets, dims = 1:30, verbose = FALSE)
+singlets <- FindClusters(singlets, verbose = FALSE, resolution = 0.5)
+singlets <- RunUMAP(singlets, dims = 1:30, verbose = FALSE)
+DimPlot(object = singlets, label = TRUE, reduction = "umap", cols = colors)
+
+singlets <- FindNeighbors(singlets, dims = 1:40, verbose = FALSE)
+singlets <- FindClusters(singlets, verbose = FALSE, resolution = 0.5)
+singlets <- RunUMAP(singlets, dims = 1:40, verbose = FALSE)
+DimPlot(object = singlets, label = TRUE, reduction = "umap", cols = colors)
+
+singlets <- FindNeighbors(singlets, dims = 1:50, verbose = FALSE)
+singlets <- FindClusters(singlets, verbose = FALSE, resolution = 0.5)
+singlets <- RunUMAP(singlets, dims = 1:50, verbose = FALSE)
+DimPlot(object = singlets, label = TRUE, reduction = "umap", cols = colors)
+
+singlets <- FindNeighbors(singlets, dims = 1:60, verbose = FALSE)
+singlets <- FindClusters(singlets, verbose = FALSE, resolution = 0.5)
+singlets <- RunUMAP(singlets, dims = 1:60, verbose = FALSE)
+DimPlot(object = singlets, label = TRUE, reduction = "umap", cols = colors)
+```
+
+```{r}
+singlets <- FindNeighbors(singlets, dims = 1:30, verbose = FALSE)
+singlets <- FindClusters(singlets, verbose = FALSE, resolution = 0.7)
+singlets <- RunUMAP(singlets, dims = 1:30, verbose = FALSE)
+DimPlot(object = singlets, label = TRUE, reduction = "umap", cols = colors)
+
+singlets <- FindNeighbors(singlets, dims = 1:40, verbose = FALSE)
+singlets <- FindClusters(singlets, verbose = FALSE, resolution = 0.7)
+singlets <- RunUMAP(singlets, dims = 1:40, verbose = FALSE)
+DimPlot(object = singlets, label = TRUE, reduction = "umap", cols = colors)
+
+singlets <- FindNeighbors(singlets, dims = 1:50, verbose = FALSE)
+singlets <- FindClusters(singlets, verbose = FALSE, resolution = 1)
+singlets <- RunUMAP(singlets, dims = 1:50, verbose = FALSE)
+DimPlot(object = singlets, label = TRUE, reduction = "umap", cols = colors)
+
+singlets <- FindNeighbors(singlets, dims = 1:50, verbose = FALSE)
+singlets <- FindClusters(singlets, verbose = FALSE, resolution = 0.7)
+singlets <- RunUMAP(singlets, dims = 1:50, verbose = FALSE)
+DimPlot(object = singlets, label = TRUE, reduction = "umap", cols = colors)
+
+
+```
+
+```{r}
+singlets <- FindNeighbors(singlets, dims = 1:35, verbose = FALSE)
+singlets <- FindClusters(singlets, verbose = FALSE, resolution = 0.5)
+singlets <- RunUMAP(singlets, dims = 1:35, verbose = FALSE)
+DimPlot(object = singlets, label = TRUE, reduction = "umap", cols = colors)
+
+singlets <- FindNeighbors(singlets, dims = 1:45, verbose = FALSE)
+singlets <- FindClusters(singlets, verbose = FALSE, resolution = 0.5)
+singlets <- RunUMAP(singlets, dims = 1:45, verbose = FALSE)
+DimPlot(object = singlets, label = TRUE, reduction = "umap", cols = colors)
+
+singlets <- FindNeighbors(singlets, dims = 1:55, verbose = FALSE)
+singlets <- FindClusters(singlets, verbose = FALSE, resolution = 0.5)
+singlets <- RunUMAP(singlets, dims = 1:55, verbose = FALSE)
+DimPlot(object = singlets, label = TRUE, reduction = "umap", cols = colors)
+```
+
+selected PC - PC 45 res 0.5 
+
+```{r}
+singlets <- FindNeighbors(singlets, dims = 1:45, verbose = FALSE)
+singlets <- FindClusters(singlets, verbose = FALSE, resolution = 0.5)
+singlets <- RunUMAP(singlets, dims = 1:45, verbose = FALSE)
+DimPlot(object = singlets, label = TRUE, reduction = "umap", cols = colors)
+
+```
+
+
+```{r, message=FALSE}
+# DEGs
+singlets.markers <- FindAllMarkers(singlets, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
+write.table(singlets.markers, "DEGs.txt", quote = F, sep="\t", col.names = T, row.names = F)
+singlets.markers <- read_tsv("DEGs.txt")
+
+singlets.markers <- singlets.markers %>%
+  group_by(cluster) %>%
+  top_n(n = 10, wt = avg_log2FC) -> top10
+
+```
+
+
+```{r}
+DoHeatmap(singlets, features = top10$gene) #+ NoLegend()
+```
+
+```{r}
+# dotplot 
+degs1 <- c(
+            "COL1A1", "SPARC","DCN","OGN", # fibroblast
+            "ACTA2","MYH11","TAGLN", # smooth muscle cells/myofibroblast
+            "MKI67", "HMGB2", "STMN1","TOP2A", # proliferating
+            "KRT8","KRT18", 'KRT19',"CD24","EPCAM", "WFDC2","KRT17", # Epithelial
+            "CD14", "FCGR3A", "S100A8", "C1QA", "TYROBP", # Mo/Mac/DC
+            "PECAM1", "VWF", "RAMP2", "RAMP3", "PLVAP","CLDN5", # endothelial
+            "NKG7","CD3D","CD3E","CD8A","THEMIS","IL7R", # T
+            "PDCD1","FOXP3", # Treg
+            "TRDC","GNLY","KLRD1", "PRF1","GZMB","FCER1G","EOMES", # NK
+            "CD79B","SPIB", "MS4A1", # B memory
+            "CD79A","MZB1", "IGHG4", "IGLC2", "IGHA1", "IGHG3","JCHAIN" # B plasma
+)
+DotPlot(singlets, features = degs1, cluster.idents = T, col.min = 0.1, dot.min = 0.1) + #, group.by = "Specific_CellType") +
+  theme(axis.text.x = element_text(angle = 90) ,panel.grid = element_line(color = "grey", size = 0.5, linetype = 2))
+
+```
+
+saved NK and myeloid subsets for subclustering - 
+
+```{r}
+# replace normalised slot with raw data
+singlets@assays$RNA@data <- singlets@assays$RNA@counts
+
+# subset 
+subset <- subset(singlets, idents = c(5,8))
+subset
+```
+
+```{r}
+# save clusters as svg
+svg("clusters.svg",width = 11, height = 10)
+options(repr.plot.width=8, repr.plot.height=12)
+DimPlot(object = nk, reduction = "umap", pt.size = 3, cols = colors, group.by = "cluster_numbers") +
+  guides(colour = guide_legend(override.aes = list(size=15))) +
+  theme(legend.text=element_text(face="bold", size=15))
+dev.off()
+```
+
+```{r}
+# featureplots 
+svg("featureplot.svg", width = 12, height = 12)
+FeaturePlot(nk, features = c("KLRC1", "FCGR3A", "PRF1", "GZMB", "B3GAT1", "KLRC2", "FCER1G"), order = T, pt.size = 1)
+dev.off()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
