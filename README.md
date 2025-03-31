@@ -1,5 +1,5 @@
-This repo contains R scripts to perform scRNAseq data analysis followed by cellular interaction analysis using cellphoneDB.
-This work is part of a manuscript titled "Enhanced NK cell proficiency in solid tumors through antigen-specific memory via NKG2C/A-HLA-E/ABC recruited to tumors by CXCR2"
+This repo contains R scripts to perform scRNAseq data analysis followed by cellular interaction analysis using cellphoneDB. 
+This work is part of a manuscript titled "Adaptive NK Cells Exhibit Tumor-Specific Immune Memory and Cytotoxicity in Ovarian Cancer"
 
 Dataset ID - GSE184880 
 
