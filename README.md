@@ -1,5 +1,5 @@
 This repo contains R scripts to perform scRNAseq data analysis followed by cellular interaction analysis using cellphoneDB. 
-This work is part of a manuscript titled "Adaptive NK Cells Exhibit Tumor-Specific Immune Memory and Cytotoxicity in Ovarian Cancer"
+This work is part of a manuscript titled "Adaptive NK Cells Exhibit Tumor-Specific Immune Memory and Cytotoxicity in Ovarian Cancer."
 
 Dataset ID - GSE184880 
 
